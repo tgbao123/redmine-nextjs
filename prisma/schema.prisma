@@ -1,0 +1,773 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model agile_colors {
+  id             Int     @id @default(autoincrement())
+  container_id   Int?
+  container_type String? @db.VarChar(255)
+  color          String? @db.VarChar(255)
+
+  @@index([container_id], map: "index_agile_colors_on_container_id")
+  @@index([container_type], map: "index_agile_colors_on_container_type")
+}
+
+model agile_data {
+  id           Int  @id @default(autoincrement())
+  issue_id     Int?
+  position     Int?
+  story_points Int?
+
+  @@index([issue_id], map: "index_agile_data_on_issue_id")
+  @@index([position], map: "index_agile_data_on_position")
+}
+
+model attachments {
+  id             Int       @id @default(autoincrement())
+  container_id   Int?
+  container_type String?   @db.VarChar(30)
+  filename       String    @default("") @db.VarChar(255)
+  disk_filename  String    @default("") @db.VarChar(255)
+  filesize       BigInt    @default(0)
+  content_type   String?   @default("") @db.VarChar(255)
+  digest         String    @default("") @db.VarChar(64)
+  downloads      Int       @default(0)
+  author_id      Int       @default(0)
+  created_on     DateTime? @db.DateTime(0)
+  description    String?   @db.VarChar(255)
+  disk_directory String?   @db.VarChar(255)
+
+  @@index([author_id], map: "index_attachments_on_author_id")
+  @@index([container_id, container_type], map: "index_attachments_on_container_id_and_container_type")
+  @@index([created_on], map: "index_attachments_on_created_on")
+  @@index([disk_filename], map: "index_attachments_on_disk_filename")
+}
+
+model auth_sources {
+  id                Int     @id @default(autoincrement())
+  type              String  @default("") @db.VarChar(30)
+  name              String  @default("") @db.VarChar(60)
+  host              String? @db.VarChar(60)
+  port              Int?
+  account           String? @db.VarChar(255)
+  account_password  String? @default("") @db.VarChar(255)
+  base_dn           String? @db.VarChar(255)
+  attr_login        String? @db.VarChar(30)
+  attr_firstname    String? @db.VarChar(30)
+  attr_lastname     String? @db.VarChar(30)
+  attr_mail         String? @db.VarChar(30)
+  onthefly_register Boolean @default(false)
+  tls               Boolean @default(false)
+  filter            String? @db.Text
+  timeout           Int?
+
+  @@index([id, type], map: "index_auth_sources_on_id_and_type")
+}
+
+model boards {
+  id              Int     @id @default(autoincrement())
+  project_id      Int
+  name            String  @default("") @db.VarChar(255)
+  description     String? @db.VarChar(255)
+  position        Int?
+  topics_count    Int     @default(0)
+  messages_count  Int     @default(0)
+  last_message_id Int?
+  parent_id       Int?
+
+  @@index([project_id], map: "boards_project_id")
+  @@index([last_message_id], map: "index_boards_on_last_message_id")
+}
+
+model changes {
+  id            Int     @id @default(autoincrement())
+  changeset_id  Int
+  action        String  @default("") @db.VarChar(1)
+  path          String  @db.Text
+  from_path     String? @db.Text
+  from_revision String? @db.VarChar(255)
+  revision      String? @db.VarChar(255)
+  branch        String? @db.VarChar(255)
+
+  @@index([changeset_id], map: "changesets_changeset_id")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model changeset_parents {
+  changeset_id Int
+  parent_id    Int
+
+  @@index([changeset_id], map: "changeset_parents_changeset_ids")
+  @@index([parent_id], map: "changeset_parents_parent_ids")
+  @@ignore
+}
+
+model changesets {
+  id            Int       @id @default(autoincrement())
+  repository_id Int
+  revision      String    @db.VarChar(255)
+  committer     String?   @db.VarChar(255)
+  committed_on  DateTime  @db.DateTime(0)
+  comments      String?   @db.LongText
+  commit_date   DateTime? @db.Date
+  scmid         String?   @db.VarChar(255)
+  user_id       Int?
+
+  @@unique([repository_id, revision], map: "changesets_repos_rev")
+  @@index([repository_id, scmid], map: "changesets_repos_scmid")
+  @@index([committed_on], map: "index_changesets_on_committed_on")
+  @@index([repository_id], map: "index_changesets_on_repository_id")
+  @@index([user_id], map: "index_changesets_on_user_id")
+}
+
+model changesets_issues {
+  changeset_id Int
+  issue_id     Int
+
+  @@unique([changeset_id, issue_id], map: "changesets_issues_ids")
+  @@index([issue_id], map: "index_changesets_issues_on_issue_id")
+}
+
+model comments {
+  id             Int      @id @default(autoincrement())
+  commented_type String   @default("") @db.VarChar(30)
+  commented_id   Int      @default(0)
+  author_id      Int      @default(0)
+  comments       String?  @db.Text
+  created_on     DateTime @db.DateTime(0)
+  updated_on     DateTime @db.DateTime(0)
+
+  @@index([author_id], map: "index_comments_on_author_id")
+  @@index([commented_id, commented_type], map: "index_comments_on_commented_id_and_commented_type")
+}
+
+model custom_field_enumerations {
+  id              Int     @id @default(autoincrement())
+  custom_field_id Int
+  name            String  @db.VarChar(255)
+  active          Boolean @default(true)
+  position        Int     @default(1)
+}
+
+model custom_fields {
+  id              Int      @id @default(autoincrement())
+  type            String   @default("") @db.VarChar(30)
+  name            String   @default("") @db.VarChar(30)
+  field_format    String   @default("") @db.VarChar(30)
+  possible_values String?  @db.Text
+  regexp          String?  @default("") @db.VarChar(255)
+  min_length      Int?
+  max_length      Int?
+  is_required     Boolean  @default(false)
+  is_for_all      Boolean  @default(false)
+  is_filter       Boolean  @default(false)
+  position        Int?
+  searchable      Boolean? @default(false)
+  default_value   String?  @db.Text
+  editable        Boolean? @default(true)
+  visible         Boolean  @default(true)
+  multiple        Boolean? @default(false)
+  format_store    String?  @db.Text
+  description     String?  @db.Text
+
+  @@index([id, type], map: "index_custom_fields_on_id_and_type")
+}
+
+model custom_fields_projects {
+  custom_field_id Int @default(0)
+  project_id      Int @default(0)
+
+  @@unique([custom_field_id, project_id], map: "index_custom_fields_projects_on_custom_field_id_and_project_id")
+}
+
+model custom_fields_roles {
+  custom_field_id Int
+  role_id         Int
+
+  @@unique([custom_field_id, role_id], map: "custom_fields_roles_ids")
+}
+
+model custom_fields_trackers {
+  custom_field_id Int @default(0)
+  tracker_id      Int @default(0)
+
+  @@unique([custom_field_id, tracker_id], map: "index_custom_fields_trackers_on_custom_field_id_and_tracker_id")
+}
+
+model custom_values {
+  id              Int     @id @default(autoincrement())
+  customized_type String  @default("") @db.VarChar(30)
+  customized_id   Int     @default(0)
+  custom_field_id Int     @default(0)
+  value           String? @db.Text
+
+  @@index([customized_type, customized_id], map: "custom_values_customized")
+  @@index([custom_field_id], map: "index_custom_values_on_custom_field_id")
+}
+
+model documents {
+  id          Int       @id @default(autoincrement())
+  project_id  Int       @default(0)
+  category_id Int       @default(0)
+  title       String    @default("") @db.VarChar(255)
+  description String?   @db.Text
+  created_on  DateTime? @db.DateTime(0)
+
+  @@index([project_id], map: "documents_project_id")
+  @@index([category_id], map: "index_documents_on_category_id")
+  @@index([created_on], map: "index_documents_on_created_on")
+}
+
+model email_addresses {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  address    String   @db.VarChar(255)
+  is_default Boolean  @default(false)
+  notify     Boolean  @default(true)
+  created_on DateTime @db.DateTime(0)
+  updated_on DateTime @db.DateTime(0)
+
+  @@index([user_id], map: "index_email_addresses_on_user_id")
+}
+
+model enabled_modules {
+  id         Int    @id @default(autoincrement())
+  project_id Int?
+  name       String @db.VarChar(255)
+
+  @@index([project_id], map: "enabled_modules_project_id")
+}
+
+model enumerations {
+  id            Int     @id @default(autoincrement())
+  name          String  @default("") @db.VarChar(30)
+  position      Int?
+  is_default    Boolean @default(false)
+  type          String? @db.VarChar(255)
+  active        Boolean @default(true)
+  project_id    Int?
+  parent_id     Int?
+  position_name String? @db.VarChar(30)
+
+  @@index([id, type], map: "index_enumerations_on_id_and_type")
+  @@index([project_id], map: "index_enumerations_on_project_id")
+}
+
+model groups_users {
+  group_id Int
+  user_id  Int
+
+  @@unique([group_id, user_id], map: "groups_users_ids")
+}
+
+model import_items {
+  id        Int     @id @default(autoincrement())
+  import_id Int
+  position  Int
+  obj_id    Int?
+  message   String? @db.Text
+}
+
+model imports {
+  id          Int      @id @default(autoincrement())
+  type        String?  @db.VarChar(255)
+  user_id     Int
+  filename    String?  @db.VarChar(255)
+  settings    String?  @db.Text
+  total_items Int?
+  finished    Boolean  @default(false)
+  created_at  DateTime @db.DateTime(0)
+  updated_at  DateTime @db.DateTime(0)
+}
+
+model issue_categories {
+  id             Int    @id @default(autoincrement())
+  project_id     Int    @default(0)
+  name           String @default("") @db.VarChar(60)
+  assigned_to_id Int?
+
+  @@index([assigned_to_id], map: "index_issue_categories_on_assigned_to_id")
+  @@index([project_id], map: "issue_categories_project_id")
+}
+
+model issue_relations {
+  id            Int    @id @default(autoincrement())
+  issue_from_id Int
+  issue_to_id   Int
+  relation_type String @default("") @db.VarChar(255)
+  delay         Int?
+
+  @@unique([issue_from_id, issue_to_id], map: "index_issue_relations_on_issue_from_id_and_issue_to_id")
+  @@index([issue_from_id], map: "index_issue_relations_on_issue_from_id")
+  @@index([issue_to_id], map: "index_issue_relations_on_issue_to_id")
+}
+
+model issue_statuses {
+  id                 Int     @id @default(autoincrement())
+  name               String  @default("") @db.VarChar(30)
+  is_closed          Boolean @default(false)
+  position           Int?
+  default_done_ratio Int?
+
+  @@index([is_closed], map: "index_issue_statuses_on_is_closed")
+  @@index([position], map: "index_issue_statuses_on_position")
+}
+
+model issues {
+  id               Int       @id @default(autoincrement())
+  tracker_id       Int
+  project_id       Int
+  subject          String    @default("") @db.VarChar(255)
+  description      String?   @db.LongText
+  due_date         DateTime? @db.Date
+  category_id      Int?
+  status_id        Int
+  assigned_to_id   Int?
+  priority_id      Int
+  fixed_version_id Int?
+  author_id        Int
+  lock_version     Int       @default(0)
+  created_on       DateTime? @db.DateTime(0)
+  updated_on       DateTime? @db.DateTime(0)
+  start_date       DateTime? @db.Date
+  done_ratio       Int       @default(0)
+  estimated_hours  Float?    @db.Float
+  parent_id        Int?
+  root_id          Int?
+  lft              Int?
+  rgt              Int?
+  is_private       Boolean   @default(false)
+  closed_on        DateTime? @db.DateTime(0)
+
+  @@index([assigned_to_id], map: "index_issues_on_assigned_to_id")
+  @@index([author_id], map: "index_issues_on_author_id")
+  @@index([category_id], map: "index_issues_on_category_id")
+  @@index([created_on], map: "index_issues_on_created_on")
+  @@index([fixed_version_id], map: "index_issues_on_fixed_version_id")
+  @@index([parent_id], map: "index_issues_on_parent_id")
+  @@index([priority_id], map: "index_issues_on_priority_id")
+  @@index([root_id, lft, rgt], map: "index_issues_on_root_id_and_lft_and_rgt")
+  @@index([status_id], map: "index_issues_on_status_id")
+  @@index([tracker_id], map: "index_issues_on_tracker_id")
+  @@index([project_id], map: "issues_project_id")
+}
+
+model journal_details {
+  id         Int     @id @default(autoincrement())
+  journal_id Int     @default(0)
+  property   String  @default("") @db.VarChar(30)
+  prop_key   String  @default("") @db.VarChar(30)
+  old_value  String? @db.LongText
+  value      String? @db.LongText
+
+  @@index([journal_id], map: "journal_details_journal_id")
+}
+
+model journals {
+  id               Int      @id @default(autoincrement())
+  journalized_id   Int      @default(0)
+  journalized_type String   @default("") @db.VarChar(30)
+  user_id          Int      @default(0)
+  notes            String?  @db.LongText
+  created_on       DateTime @db.DateTime(0)
+  private_notes    Boolean  @default(false)
+
+  @@index([created_on], map: "index_journals_on_created_on")
+  @@index([journalized_id], map: "index_journals_on_journalized_id")
+  @@index([user_id], map: "index_journals_on_user_id")
+  @@index([journalized_id, journalized_type], map: "journals_journalized_id")
+}
+
+model member_roles {
+  id             Int  @id @default(autoincrement())
+  member_id      Int
+  role_id        Int
+  inherited_from Int?
+
+  @@index([inherited_from], map: "index_member_roles_on_inherited_from")
+  @@index([member_id], map: "index_member_roles_on_member_id")
+  @@index([role_id], map: "index_member_roles_on_role_id")
+}
+
+model members {
+  id                Int       @id @default(autoincrement())
+  user_id           Int       @default(0)
+  project_id        Int       @default(0)
+  created_on        DateTime? @db.DateTime(0)
+  mail_notification Boolean   @default(false)
+
+  @@unique([user_id, project_id], map: "index_members_on_user_id_and_project_id")
+  @@index([project_id], map: "index_members_on_project_id")
+  @@index([user_id], map: "index_members_on_user_id")
+}
+
+model messages {
+  id            Int      @id @default(autoincrement())
+  board_id      Int
+  parent_id     Int?
+  subject       String   @default("") @db.VarChar(255)
+  content       String?  @db.Text
+  author_id     Int?
+  replies_count Int      @default(0)
+  last_reply_id Int?
+  created_on    DateTime @db.DateTime(0)
+  updated_on    DateTime @db.DateTime(0)
+  locked        Boolean? @default(false)
+  sticky        Int?     @default(0)
+
+  @@index([author_id], map: "index_messages_on_author_id")
+  @@index([created_on], map: "index_messages_on_created_on")
+  @@index([last_reply_id], map: "index_messages_on_last_reply_id")
+  @@index([board_id], map: "messages_board_id")
+  @@index([parent_id], map: "messages_parent_id")
+}
+
+model news {
+  id             Int       @id @default(autoincrement())
+  project_id     Int?
+  title          String    @default("") @db.VarChar(60)
+  summary        String?   @default("") @db.VarChar(255)
+  description    String?   @db.Text
+  author_id      Int       @default(0)
+  created_on     DateTime? @db.DateTime(0)
+  comments_count Int       @default(0)
+
+  @@index([author_id], map: "index_news_on_author_id")
+  @@index([created_on], map: "index_news_on_created_on")
+  @@index([project_id], map: "news_project_id")
+}
+
+model open_id_authentication_associations {
+  id         Int     @id @default(autoincrement())
+  issued     Int?
+  lifetime   Int?
+  handle     String? @db.VarChar(255)
+  assoc_type String? @db.VarChar(255)
+  server_url Bytes?  @db.Blob
+  secret     Bytes?  @db.Blob
+}
+
+model open_id_authentication_nonces {
+  id         Int     @id @default(autoincrement())
+  timestamp  Int
+  server_url String? @db.VarChar(255)
+  salt       String  @db.VarChar(255)
+}
+
+model projects {
+  id                     Int       @id @default(autoincrement())
+  name                   String    @default("") @db.VarChar(255)
+  description            String?   @db.Text
+  homepage               String?   @default("") @db.VarChar(255)
+  is_public              Boolean   @default(true)
+  parent_id              Int?
+  created_on             DateTime? @db.DateTime(0)
+  updated_on             DateTime? @db.DateTime(0)
+  identifier             String?   @db.VarChar(255)
+  status                 Int       @default(1)
+  lft                    Int?
+  rgt                    Int?
+  inherit_members        Boolean   @default(false)
+  default_version_id     Int?
+  default_assigned_to_id Int?
+
+  @@index([lft], map: "index_projects_on_lft")
+  @@index([rgt], map: "index_projects_on_rgt")
+}
+
+model projects_trackers {
+  project_id Int @default(0)
+  tracker_id Int @default(0)
+
+  @@unique([project_id, tracker_id], map: "projects_trackers_unique")
+  @@index([project_id], map: "projects_trackers_project_id")
+}
+
+model queries {
+  id            Int     @id @default(autoincrement())
+  project_id    Int?
+  name          String  @default("") @db.VarChar(255)
+  filters       String? @db.Text
+  user_id       Int     @default(0)
+  column_names  String? @db.Text
+  sort_criteria String? @db.Text
+  group_by      String? @db.VarChar(255)
+  type          String? @db.VarChar(255)
+  visibility    Int?    @default(0)
+  options       String? @db.Text
+
+  @@index([project_id], map: "index_queries_on_project_id")
+  @@index([user_id], map: "index_queries_on_user_id")
+}
+
+model queries_roles {
+  query_id Int
+  role_id  Int
+
+  @@unique([query_id, role_id], map: "queries_roles_ids")
+}
+
+model repositories {
+  id            Int       @id @default(autoincrement())
+  project_id    Int       @default(0)
+  url           String    @default("") @db.VarChar(255)
+  login         String?   @default("") @db.VarChar(60)
+  password      String?   @default("") @db.VarChar(255)
+  root_url      String?   @default("") @db.VarChar(255)
+  type          String?   @db.VarChar(255)
+  path_encoding String?   @db.VarChar(64)
+  log_encoding  String?   @db.VarChar(64)
+  extra_info    String?   @db.LongText
+  identifier    String?   @db.VarChar(255)
+  is_default    Boolean?  @default(false)
+  created_on    DateTime? @db.DateTime(0)
+
+  @@index([project_id], map: "index_repositories_on_project_id")
+}
+
+model roles {
+  id                      Int      @id @default(autoincrement())
+  name                    String   @default("") @db.VarChar(30)
+  position                Int?
+  assignable              Boolean? @default(true)
+  builtin                 Int      @default(0)
+  permissions             String?  @db.Text
+  issues_visibility       String   @default("default") @db.VarChar(30)
+  users_visibility        String   @default("all") @db.VarChar(30)
+  time_entries_visibility String   @default("all") @db.VarChar(30)
+  all_roles_managed       Boolean  @default(true)
+  settings                String?  @db.Text
+}
+
+model roles_managed_roles {
+  role_id         Int
+  managed_role_id Int
+
+  @@unique([role_id, managed_role_id], map: "index_roles_managed_roles_on_role_id_and_managed_role_id")
+}
+
+model schema_migrations {
+  version String @unique(map: "unique_schema_migrations") @db.VarChar(255)
+}
+
+model settings {
+  id         Int       @id @default(autoincrement())
+  name       String    @default("") @db.VarChar(255)
+  value      String?   @db.Text
+  updated_on DateTime? @db.DateTime(0)
+
+  @@index([name], map: "index_settings_on_name")
+}
+
+model time_entries {
+  id          Int      @id @default(autoincrement())
+  project_id  Int
+  user_id     Int
+  issue_id    Int?
+  hours       Float    @db.Float
+  comments    String?  @db.VarChar(1024)
+  activity_id Int
+  spent_on    DateTime @db.Date
+  tyear       Int
+  tmonth      Int
+  tweek       Int
+  created_on  DateTime @db.DateTime(0)
+  updated_on  DateTime @db.DateTime(0)
+
+  @@index([activity_id], map: "index_time_entries_on_activity_id")
+  @@index([created_on], map: "index_time_entries_on_created_on")
+  @@index([user_id], map: "index_time_entries_on_user_id")
+  @@index([issue_id], map: "time_entries_issue_id")
+  @@index([project_id], map: "time_entries_project_id")
+}
+
+model time_logger_records {
+  id             Int       @id @default(autoincrement())
+  time_logger_id Int       @unique(map: "uniq_logger")
+  user_id        Int?
+  issue_id       Int?
+  started_on     DateTime? @db.DateTime(0)
+  time_spent     Float?    @default(0) @db.Float
+  paused         Boolean?  @default(false)
+  stopped_on     DateTime? @db.DateTime(0)
+  created_at     DateTime? @default(now()) @db.DateTime(0)
+  updated_at     DateTime? @default(now()) @db.DateTime(0)
+}
+
+model time_loggers {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  issue_id   Int?
+  started_on DateTime? @db.DateTime(0)
+  time_spent Float?    @default(0) @db.Float
+  paused     Boolean?  @default(false)
+}
+
+model tokens {
+  id         Int       @id @default(autoincrement())
+  user_id    Int       @default(0)
+  action     String    @default("") @db.VarChar(30)
+  value      String    @unique(map: "tokens_value") @default("") @db.VarChar(40)
+  created_on DateTime  @db.DateTime(0)
+  updated_on DateTime? @db.DateTime(0)
+
+  @@index([user_id], map: "index_tokens_on_user_id")
+}
+
+model trackers {
+  id                Int     @id @default(autoincrement())
+  name              String  @default("") @db.VarChar(30)
+  is_in_chlog       Boolean @default(false)
+  position          Int?
+  is_in_roadmap     Boolean @default(true)
+  fields_bits       Int?    @default(0)
+  default_status_id Int?
+}
+
+model user_preferences {
+  id        Int      @id @default(autoincrement())
+  user_id   Int      @default(0)
+  others    String?  @db.Text
+  hide_mail Boolean? @default(true)
+  time_zone String?  @db.VarChar(255)
+
+  @@index([user_id], map: "index_user_preferences_on_user_id")
+}
+
+model users {
+  id                 Int       @id @default(autoincrement())
+  login              String    @default("") @db.VarChar(255)
+  hashed_password    String    @default("") @db.VarChar(40)
+  firstname          String    @default("") @db.VarChar(30)
+  lastname           String    @default("") @db.VarChar(255)
+  admin              Boolean   @default(false)
+  status             Int       @default(1)
+  last_login_on      DateTime? @db.DateTime(0)
+  language           String?   @default("") @db.VarChar(5)
+  auth_source_id     Int?
+  created_on         DateTime? @db.DateTime(0)
+  updated_on         DateTime? @db.DateTime(0)
+  type               String?   @db.VarChar(255)
+  identity_url       String?   @db.VarChar(255)
+  mail_notification  String    @default("") @db.VarChar(255)
+  salt               String?   @db.VarChar(64)
+  must_change_passwd Boolean   @default(false)
+  passwd_changed_on  DateTime? @db.DateTime(0)
+
+  @@index([auth_source_id], map: "index_users_on_auth_source_id")
+  @@index([id, type], map: "index_users_on_id_and_type")
+  @@index([type], map: "index_users_on_type")
+}
+
+model versions {
+  id              Int       @id @default(autoincrement())
+  project_id      Int       @default(0)
+  name            String    @default("") @db.VarChar(255)
+  description     String?   @default("") @db.VarChar(255)
+  effective_date  DateTime? @db.Date
+  created_on      DateTime? @db.DateTime(0)
+  updated_on      DateTime? @db.DateTime(0)
+  wiki_page_title String?   @db.VarChar(255)
+  status          String?   @default("open") @db.VarChar(255)
+  sharing         String    @default("none") @db.VarChar(255)
+
+  @@index([sharing], map: "index_versions_on_sharing")
+  @@index([project_id], map: "versions_project_id")
+}
+
+model watchers {
+  id             Int    @id @default(autoincrement())
+  watchable_type String @default("") @db.VarChar(255)
+  watchable_id   Int    @default(0)
+  user_id        Int?
+
+  @@index([user_id], map: "index_watchers_on_user_id")
+  @@index([watchable_id, watchable_type], map: "index_watchers_on_watchable_id_and_watchable_type")
+  @@index([user_id, watchable_type], map: "watchers_user_id_type")
+}
+
+model wiki_content_versions {
+  id              Int      @id @default(autoincrement())
+  wiki_content_id Int
+  page_id         Int
+  author_id       Int?
+  data            Bytes?
+  compression     String?  @default("") @db.VarChar(6)
+  comments        String?  @default("") @db.VarChar(1024)
+  updated_on      DateTime @db.DateTime(0)
+  version         Int
+
+  @@index([updated_on], map: "index_wiki_content_versions_on_updated_on")
+  @@index([wiki_content_id], map: "wiki_content_versions_wcid")
+}
+
+model wiki_contents {
+  id         Int      @id @default(autoincrement())
+  page_id    Int
+  author_id  Int?
+  text       String?  @db.LongText
+  comments   String?  @default("") @db.VarChar(1024)
+  updated_on DateTime @db.DateTime(0)
+  version    Int
+
+  @@index([author_id], map: "index_wiki_contents_on_author_id")
+  @@index([page_id], map: "wiki_contents_page_id")
+}
+
+model wiki_pages {
+  id         Int      @id @default(autoincrement())
+  wiki_id    Int
+  title      String   @db.VarChar(255)
+  created_on DateTime @db.DateTime(0)
+  protected  Boolean  @default(false)
+  parent_id  Int?
+
+  @@index([parent_id], map: "index_wiki_pages_on_parent_id")
+  @@index([wiki_id], map: "index_wiki_pages_on_wiki_id")
+  @@index([wiki_id, title], map: "wiki_pages_wiki_id_title")
+}
+
+model wiki_redirects {
+  id                   Int      @id @default(autoincrement())
+  wiki_id              Int
+  title                String?  @db.VarChar(255)
+  redirects_to         String?  @db.VarChar(255)
+  created_on           DateTime @db.DateTime(0)
+  redirects_to_wiki_id Int
+
+  @@index([wiki_id], map: "index_wiki_redirects_on_wiki_id")
+  @@index([wiki_id, title], map: "wiki_redirects_wiki_id_title")
+}
+
+model wikis {
+  id         Int    @id @default(autoincrement())
+  project_id Int
+  start_page String @db.VarChar(255)
+  status     Int    @default(1)
+
+  @@index([project_id], map: "wikis_project_id")
+}
+
+model workflows {
+  id            Int     @id @default(autoincrement())
+  tracker_id    Int     @default(0)
+  old_status_id Int     @default(0)
+  new_status_id Int     @default(0)
+  role_id       Int     @default(0)
+  assignee      Boolean @default(false)
+  author        Boolean @default(false)
+  type          String? @db.VarChar(30)
+  field_name    String? @db.VarChar(30)
+  rule          String? @db.VarChar(30)
+
+  @@index([new_status_id], map: "index_workflows_on_new_status_id")
+  @@index([old_status_id], map: "index_workflows_on_old_status_id")
+  @@index([role_id], map: "index_workflows_on_role_id")
+  @@index([tracker_id], map: "index_workflows_on_tracker_id")
+  @@index([role_id, tracker_id, old_status_id], map: "wkfs_role_tracker_old_status")
+}

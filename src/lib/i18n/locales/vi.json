@@ -1,0 +1,82 @@
+{
+    "common": {
+        "save": "Lưu",
+        "cancel": "Hủy",
+        "delete": "Xóa",
+        "edit": "Sửa",
+        "create": "Tạo mới",
+        "search": "Tìm kiếm",
+        "loading": "Đang tải...",
+        "error": "Lỗi",
+        "success": "Thành công"
+    },
+    "auth": {
+        "login": "Đăng nhập",
+        "logout": "Đăng xuất",
+        "loginOrEmail": "Tên đăng nhập hoặc Email",
+        "password": "Mật khẩu",
+        "welcomeTitle": "Chào mừng đến Redmine",
+        "welcomeSubtitle": "Đăng nhập để tiếp tục",
+        "invalidCredentials": "Tên đăng nhập hoặc mật khẩu không đúng",
+        "notLoggedIn": "Chưa đăng nhập"
+    },
+    "nav": {
+        "home": "Trang chủ",
+        "myPage": "Trang cá nhân",
+        "projects": "Dự án",
+        "administration": "Quản trị"
+    },
+    "dashboard": {
+        "title": "Trang chủ",
+        "subtitle": "Chào mừng trở lại! Đây là tổng quan các dự án của bạn.",
+        "recentIssues": "Công việc gần đây",
+        "latestIssues": "Các công việc mới nhất trong tất cả dự án",
+        "activeProjects": "Dự án hoạt động",
+        "openIssues": "Công việc đang mở",
+        "thisMonth": "Tháng này",
+        "activeUsers": "Người dùng hoạt động"
+    },
+    "account": {
+        "title": "Tài khoản",
+        "subtitle": "Quản lý thông tin cá nhân của bạn",
+        "information": "Thông tin",
+        "changePassword": "Đổi mật khẩu",
+        "firstName": "Họ",
+        "lastName": "Tên",
+        "email": "Email",
+        "language": "Ngôn ngữ",
+        "profileUpdated": "Cập nhật thông tin thành công!",
+        "passwordChanged": "Đổi mật khẩu thành công!",
+        "currentPassword": "Mật khẩu hiện tại",
+        "newPassword": "Mật khẩu mới",
+        "confirmPassword": "Xác nhận mật khẩu mới",
+        "passwordPlaceholder": "Nhập mật khẩu hiện tại",
+        "newPasswordPlaceholder": "Nhập mật khẩu mới",
+        "confirmPasswordPlaceholder": "Xác nhận mật khẩu mới"
+    },
+    "projects": {
+        "title": "Dự án",
+        "subtitle": "Quản lý dự án của bạn",
+        "newProject": "Dự án mới",
+        "noProjects": "Không có dự án nào",
+        "name": "Tên",
+        "description": "Mô tả",
+        "identifier": "Mã định danh",
+        "homepage": "Trang chủ",
+        "isPublic": "Công khai",
+        "parentProject": "Dự án cha",
+        "createdOn": "Ngày tạo",
+        "status": "Trạng thái",
+        "active": "Hoạt động",
+        "closed": "Đã đóng",
+        "archived": "Đã lưu trữ"
+    },
+    "errors": {
+        "required": "Trường này là bắt buộc",
+        "passwordMismatch": "Mật khẩu mới không khớp",
+        "passwordTooShort": "Mật khẩu phải có ít nhất 8 ký tự",
+        "incorrectPassword": "Mật khẩu hiện tại không đúng",
+        "updateFailed": "Cập nhật thất bại",
+        "notAuthenticated": "Chưa xác thực"
+    }
+}

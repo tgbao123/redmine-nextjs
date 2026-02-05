@@ -1,0 +1,82 @@
+{
+    "common": {
+        "save": "保存",
+        "cancel": "取消",
+        "delete": "删除",
+        "edit": "编辑",
+        "create": "创建",
+        "search": "搜索",
+        "loading": "加载中...",
+        "error": "错误",
+        "success": "成功"
+    },
+    "auth": {
+        "login": "登录",
+        "logout": "登出",
+        "loginOrEmail": "用户名或邮箱",
+        "password": "密码",
+        "welcomeTitle": "欢迎来到Redmine",
+        "welcomeSubtitle": "请登录以继续",
+        "invalidCredentials": "用户名或密码无效",
+        "notLoggedIn": "未登录"
+    },
+    "nav": {
+        "home": "首页",
+        "myPage": "我的页面",
+        "projects": "项目",
+        "administration": "管理"
+    },
+    "dashboard": {
+        "title": "首页",
+        "subtitle": "欢迎回来！这是您的项目概览。",
+        "recentIssues": "最近问题",
+        "latestIssues": "所有项目的最新问题",
+        "activeProjects": "活跃项目",
+        "openIssues": "待处理问题",
+        "thisMonth": "本月",
+        "activeUsers": "活跃用户"
+    },
+    "account": {
+        "title": "我的账户",
+        "subtitle": "管理您的个人信息",
+        "information": "信息",
+        "changePassword": "修改密码",
+        "firstName": "名",
+        "lastName": "姓",
+        "email": "邮箱",
+        "language": "语言",
+        "profileUpdated": "个人资料更新成功！",
+        "passwordChanged": "密码修改成功！",
+        "currentPassword": "当前密码",
+        "newPassword": "新密码",
+        "confirmPassword": "确认新密码",
+        "passwordPlaceholder": "输入当前密码",
+        "newPasswordPlaceholder": "输入新密码",
+        "confirmPasswordPlaceholder": "确认新密码"
+    },
+    "projects": {
+        "title": "项目",
+        "subtitle": "管理您的项目",
+        "newProject": "新建项目",
+        "noProjects": "暂无项目",
+        "name": "名称",
+        "description": "描述",
+        "identifier": "标识符",
+        "homepage": "主页",
+        "isPublic": "公开",
+        "parentProject": "父项目",
+        "createdOn": "创建日期",
+        "status": "状态",
+        "active": "活动",
+        "closed": "已关闭",
+        "archived": "已归档"
+    },
+    "errors": {
+        "required": "此字段为必填项",
+        "passwordMismatch": "新密码不匹配",
+        "passwordTooShort": "密码至少需要8个字符",
+        "incorrectPassword": "当前密码不正确",
+        "updateFailed": "更新失败",
+        "notAuthenticated": "未认证"
+    }
+}

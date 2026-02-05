@@ -1,0 +1,82 @@
+{
+    "common": {
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "create": "Create",
+        "search": "Search",
+        "loading": "Loading...",
+        "error": "Error",
+        "success": "Success"
+    },
+    "auth": {
+        "login": "Sign In",
+        "logout": "Sign Out",
+        "loginOrEmail": "Login or Email",
+        "password": "Password",
+        "welcomeTitle": "Welcome to Redmine",
+        "welcomeSubtitle": "Sign in to your account to continue",
+        "invalidCredentials": "Invalid login or password",
+        "notLoggedIn": "Not logged in"
+    },
+    "nav": {
+        "home": "Home",
+        "myPage": "My page",
+        "projects": "Projects",
+        "administration": "Administration"
+    },
+    "dashboard": {
+        "title": "Home",
+        "subtitle": "Welcome back! Here's an overview of your projects.",
+        "recentIssues": "Recent Issues",
+        "latestIssues": "Latest issues across all projects",
+        "activeProjects": "Active projects",
+        "openIssues": "Open issues",
+        "thisMonth": "This month",
+        "activeUsers": "Active users"
+    },
+    "account": {
+        "title": "My Account",
+        "subtitle": "Manage your personal information",
+        "information": "Information",
+        "changePassword": "Change password",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "email": "Email",
+        "language": "Language",
+        "profileUpdated": "Profile updated successfully!",
+        "passwordChanged": "Password changed successfully!",
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm new password",
+        "passwordPlaceholder": "Enter your current password",
+        "newPasswordPlaceholder": "Enter new password",
+        "confirmPasswordPlaceholder": "Confirm new password"
+    },
+    "projects": {
+        "title": "Projects",
+        "subtitle": "Manage your projects",
+        "newProject": "New project",
+        "noProjects": "No projects found",
+        "name": "Name",
+        "description": "Description",
+        "identifier": "Identifier",
+        "homepage": "Homepage",
+        "isPublic": "Public",
+        "parentProject": "Parent project",
+        "createdOn": "Created",
+        "status": "Status",
+        "active": "Active",
+        "closed": "Closed",
+        "archived": "Archived"
+    },
+    "errors": {
+        "required": "This field is required",
+        "passwordMismatch": "New passwords do not match",
+        "passwordTooShort": "Password must be at least 8 characters",
+        "incorrectPassword": "Current password is incorrect",
+        "updateFailed": "Failed to update",
+        "notAuthenticated": "Not authenticated"
+    }
+}
