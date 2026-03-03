@@ -495,7 +495,7 @@ export function IssuesList({
                                     className={`border-t hover:bg-muted/30 ${issue.isClosed ? 'line-through text-muted-foreground' : ''}`}
                                 >
                                     <td className="px-3 py-2">
-                                        <Link href={`/issues/${issue.id}`} className="text-primary hover:underline">
+                                        <Link href={`${projectUrl}/issues/${issue.id}`} className="text-primary hover:underline">
                                             {issue.id}
                                         </Link>
                                     </td>
@@ -507,7 +507,7 @@ export function IssuesList({
                                         {issue.priorityName}
                                     </td>
                                     <td className="px-3 py-2">
-                                        <Link href={`/issues/${issue.id}`} className="hover:underline">
+                                        <Link href={`${projectUrl}/issues/${issue.id}`} className="hover:underline">
                                             {issue.subject}
                                         </Link>
                                     </td>
