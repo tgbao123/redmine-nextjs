@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { updateIssueAction, addNoteAction, deleteIssueAction } from "@/lib/issues/actions";
+import { addRelationAction, deleteRelationAction } from "@/lib/issues/relations-actions";
+import { watchAction, unwatchAction, addWatcherAction, removeWatcherAction } from "@/lib/issues/watchers-actions";
 import { PermissionProvider, usePermission } from "@/components/providers/permission-provider";
 import ReactMarkdown from "react-markdown";
 
@@ -213,8 +215,8 @@ function IssueDetailContent({
                             key={tab.id}
                             href={`${basePath}${tab.href}`}
                             className={`px-3 py-2 text-sm font-medium border-b-2 whitespace-nowrap ${tab.id === "issues"
-                                    ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                                ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                                 }`}
                         >
                             {tab.name}
@@ -230,8 +232,8 @@ function IssueDetailContent({
                     <div>
                         <h2 className="text-xl font-bold flex items-center gap-2">
                             <span className={`text-sm px-2 py-0.5 rounded font-medium ${issue.tracker.name === "Bug" ? "bg-red-100 text-red-700" :
-                                    issue.tracker.name === "Feature" ? "bg-blue-100 text-blue-700" :
-                                        "bg-green-100 text-green-700"
+                                issue.tracker.name === "Feature" ? "bg-blue-100 text-blue-700" :
+                                    "bg-green-100 text-green-700"
                                 }`}>
                                 {issue.tracker.name}
                             </span>
@@ -304,23 +306,28 @@ function IssueDetailContent({
                         )}
 
                         {/* Relations */}
-                        {relations.length > 0 && (
-                            <div className="border rounded-lg p-4 bg-white dark:bg-gray-900">
-                                <h4 className="font-semibold text-sm text-gray-500 mb-2">Relations</h4>
-                                <div className="space-y-1">
-                                    {relations.map((r) => r.otherIssue && (
-                                        <div key={r.id} className="flex items-center gap-2 text-sm">
-                                            <span className="text-gray-500">{RELATION_LABELS[r.relationType] || r.relationType}</span>
-                                            <Link href={`${basePath}/issues/${r.otherIssue.id}`} className={`hover:underline ${r.otherIssue.isClosed ? "line-through text-gray-400" : "text-blue-600"}`}>
-                                                {r.otherIssue.tracker} #{r.otherIssue.id}
-                                            </Link>
-                                            <span className={r.otherIssue.isClosed ? "text-gray-400" : ""}>{r.otherIssue.subject}</span>
-                                            {r.delay && <span className="text-gray-400">({r.delay} days)</span>}
-                                        </div>
-                                    ))}
-                                </div>
+                        <div className="border rounded-lg p-4 bg-white dark:bg-gray-900">
+                            <h4 className="font-semibold text-sm text-gray-500 mb-2">Relations ({relations.length})</h4>
+                            <div className="space-y-1">
+                                {relations.map((r) => r.otherIssue && (
+                                    <div key={r.id} className="flex items-center gap-2 text-sm group">
+                                        <span className="text-gray-500">{RELATION_LABELS[r.relationType] || r.relationType}</span>
+                                        <Link href={`${basePath}/issues/${r.otherIssue.id}`} className={`hover:underline ${r.otherIssue.isClosed ? "line-through text-gray-400" : "text-blue-600"}`}>
+                                            {r.otherIssue.tracker} #{r.otherIssue.id}
+                                        </Link>
+                                        <span className={r.otherIssue.isClosed ? "text-gray-400" : ""}>{r.otherIssue.subject}</span>
+                                        {r.delay && <span className="text-gray-400">({r.delay} days)</span>}
+                                        {can("manage_issue_relations") && (
+                                            <button onClick={() => { startTransition(async () => { await deleteRelationAction(r.id); router.refresh(); }); }}
+                                                className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 text-xs">✕</button>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-                        )}
+                            {can("manage_issue_relations") && (
+                                <AddRelationForm issueId={issue.id} onSuccess={() => router.refresh()} />
+                            )}
+                        </div>
 
                         {/* Update Form */}
                         {can("add_issue_notes") && (
@@ -496,16 +503,35 @@ function IssueDetailContent({
                         )}
 
                         {/* Watchers */}
-                        {watchers.length > 0 && (
-                            <div className="border rounded-lg p-4 bg-white dark:bg-gray-900">
-                                <h4 className="font-semibold text-sm text-gray-500 mb-2">Watchers ({watchers.length})</h4>
-                                <ul className="space-y-1 text-sm">
-                                    {watchers.map((w) => (
-                                        <li key={w.id} className="text-gray-700 dark:text-gray-300">{w.name}</li>
-                                    ))}
-                                </ul>
+                        <div className="border rounded-lg p-4 bg-white dark:bg-gray-900">
+                            <div className="flex items-center justify-between mb-2">
+                                <h4 className="font-semibold text-sm text-gray-500">Watchers ({watchers.length})</h4>
+                                <button onClick={() => {
+                                    const isWatching = watchers.some(w => w.id === currentUserId);
+                                    startTransition(async () => {
+                                        if (isWatching) await unwatchAction("Issue", issue.id);
+                                        else await watchAction("Issue", issue.id);
+                                        router.refresh();
+                                    });
+                                }} className="text-xs text-blue-600 hover:underline" disabled={isPending}>
+                                    {watchers.some(w => w.id === currentUserId) ? "Unwatch" : "Watch"}
+                                </button>
                             </div>
-                        )}
+                            <ul className="space-y-1 text-sm">
+                                {watchers.map((w) => (
+                                    <li key={w.id} className="flex items-center justify-between group">
+                                        <span className="text-gray-700 dark:text-gray-300">{w.name}</span>
+                                        {(isAdmin || can("delete_issue_watchers")) && (
+                                            <button onClick={() => { startTransition(async () => { await removeWatcherAction("Issue", issue.id, w.id); router.refresh(); }); }}
+                                                className="text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 text-xs">✕</button>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                            {(isAdmin || can("add_issue_watchers")) && (
+                                <AddWatcherForm issueId={issue.id} members={members} watchers={watchers} onSuccess={() => router.refresh()} />
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -566,4 +592,67 @@ function PropertyChange({
         return <span><strong>{fieldName}</strong> deleted (<del>{oldVal}</del>)</span>;
     }
     return <span><strong>{fieldName}</strong> changed from <em>{oldVal}</em> to <em>{newVal}</em></span>;
+}
+
+// ─── Add Relation Form ───
+
+function AddRelationForm({ issueId, onSuccess }: { issueId: number; onSuccess: () => void }) {
+    const [show, setShow] = useState(false);
+    const [relationType, setRelationType] = useState("relates");
+    const [targetId, setTargetId] = useState("");
+    const [isPending, startTransition] = useTransition();
+
+    const handleSubmit = () => {
+        const id = parseInt(targetId);
+        if (isNaN(id)) { alert("Enter a valid issue number"); return; }
+        startTransition(async () => {
+            const result = await addRelationAction(issueId, id, relationType);
+            if (result.success) { setTargetId(""); setShow(false); onSuccess(); }
+            else alert(result.error);
+        });
+    };
+
+    if (!show) return <button onClick={() => setShow(true)} className="mt-2 text-xs text-blue-600 hover:underline">+ Add relation</button>;
+
+    return (
+        <div className="mt-3 flex items-center gap-2 text-sm">
+            <select value={relationType} onChange={e => setRelationType(e.target.value)} className="border rounded px-2 py-1 text-xs">
+                {Object.entries(RELATION_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+            <span className="text-gray-500">#</span>
+            <input type="number" value={targetId} onChange={e => setTargetId(e.target.value)} placeholder="Issue #" className="border rounded px-2 py-1 text-xs w-20" />
+            <button onClick={handleSubmit} disabled={isPending} className="text-xs text-blue-600 hover:underline">Add</button>
+            <button onClick={() => setShow(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+        </div>
+    );
+}
+
+// ─── Add Watcher Form ───
+
+function AddWatcherForm({ issueId, members, watchers, onSuccess }: { issueId: number; members: { id: number; name: string }[]; watchers: { id: number; name: string }[]; onSuccess: () => void }) {
+    const [show, setShow] = useState(false);
+    const [isPending, startTransition] = useTransition();
+    const watcherIds = new Set(watchers.map(w => w.id));
+    const available = members.filter(m => !watcherIds.has(m.id));
+
+    const handleAdd = (userId: number) => {
+        startTransition(async () => {
+            const result = await addWatcherAction("Issue", issueId, userId);
+            if (result.success) onSuccess();
+            else alert(result.error);
+        });
+    };
+
+    if (!show) return <button onClick={() => setShow(true)} className="mt-2 text-xs text-blue-600 hover:underline">+ Add watcher</button>;
+
+    return (
+        <div className="mt-2">
+            <select onChange={e => { if (e.target.value) handleAdd(parseInt(e.target.value)); e.target.value = ""; }}
+                className="border rounded px-2 py-1 text-xs w-full" disabled={isPending}>
+                <option value="">-- Select member --</option>
+                {available.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+            <button onClick={() => setShow(false)} className="mt-1 text-xs text-gray-400 hover:text-gray-600">Cancel</button>
+        </div>
+    );
 }

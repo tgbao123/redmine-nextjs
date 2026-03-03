@@ -136,7 +136,7 @@ export async function createProjectAction(formData: FormData) {
         if (inheritMembers && parentId) {
             const parentMembers = await prisma.members.findMany({
                 where: { project_id: parseInt(parentId) },
-                include: { member_roles: true }
+                select: { id: true, user_id: true }
             });
 
             for (const parentMember of parentMembers) {
@@ -151,10 +151,14 @@ export async function createProjectAction(formData: FormData) {
                     }
                 });
 
-                // Copy roles
-                if (parentMember.member_roles.length > 0) {
+                // Copy roles from parent member
+                const parentRoles = await prisma.member_roles.findMany({
+                    where: { member_id: parentMember.id },
+                    select: { role_id: true }
+                });
+                if (parentRoles.length > 0) {
                     await prisma.member_roles.createMany({
-                        data: parentMember.member_roles.map((mr: { role_id: number }) => ({
+                        data: parentRoles.map((mr) => ({
                             member_id: newMember.id,
                             role_id: mr.role_id
                         }))

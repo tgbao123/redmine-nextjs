@@ -5,8 +5,8 @@ import { parsePermissions } from "@/lib/permissions/constants";
 export default async function AdminRolesPage() {
     const roles = await prisma.roles.findMany({ orderBy: { position: "asc" } });
     const rolesData = roles.map((r) => ({
-        id: r.id, name: r.name, builtin: r.builtin, assignable: r.assignable,
-        permissions: parsePermissions(r.permissions || ""),
+        id: r.id, name: r.name, builtin: r.builtin, assignable: r.assignable ?? true,
+        permissions: Array.from(parsePermissions(r.permissions || "")),
         position: r.position || 0,
     }));
 

@@ -19,13 +19,14 @@ export async function GET(req: NextRequest) {
     const [users, totalCount] = await Promise.all([
         prisma.users.findMany({
             where, orderBy: { login: "asc" }, skip: offset, take: limit,
-            select: { id: true, login: true, firstname: true, lastname: true, mail: true, admin: true, status: true, created_on: true, last_login_on: true }
+            select: { id: true, login: true, firstname: true, lastname: true, admin: true, status: true, created_on: true, last_login_on: true }
         }),
         prisma.users.count({ where }),
     ]);
 
     return jsonOk({
-        users: users.map(u => ({ id: u.id, login: u.login, firstname: u.firstname, lastname: u.lastname, mail: u.mail, admin: u.admin, status: u.status, created_on: u.created_on, last_login_on: u.last_login_on })),
+        users: users.map(u => ({ id: u.id, login: u.login, firstname: u.firstname, lastname: u.lastname, admin: u.admin, status: u.status, created_on: u.created_on, last_login_on: u.last_login_on })),
         total_count: totalCount, offset, limit,
     });
 }
+

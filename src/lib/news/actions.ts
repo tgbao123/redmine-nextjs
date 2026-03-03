@@ -37,8 +37,33 @@ export async function updateNewsAction(projectId: number, projectIdentifier: str
 export async function deleteNewsAction(projectId: number, projectIdentifier: string, newsId: number): Promise<{ success: boolean; error?: string }> {
     try {
         await requirePermission(projectId, Permission.MANAGE_NEWS);
+        await prisma.comments.deleteMany({ where: { commented_type: "News", commented_id: newsId } });
         await prisma.news.delete({ where: { id: newsId } });
         revalidatePath(`/projects/${projectIdentifier}/news`);
+        return { success: true };
+    } catch (e: any) { return { success: false, error: e.message }; }
+}
+
+// ─── Comments ───
+
+export async function addCommentAction(projectId: number, projectIdentifier: string, newsId: number, content: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        const user = await requirePermission(projectId, Permission.COMMENT_NEWS);
+        await prisma.comments.create({
+            data: { commented_type: "News", commented_id: newsId, author_id: user.id, comments: content, created_on: new Date(), updated_on: new Date() },
+        });
+        await prisma.news.update({ where: { id: newsId }, data: { comments_count: { increment: 1 } } });
+        revalidatePath(`/projects/${projectIdentifier}/news/${newsId}`);
+        return { success: true };
+    } catch (e: any) { return { success: false, error: e.message }; }
+}
+
+export async function deleteCommentAction(projectId: number, projectIdentifier: string, newsId: number, commentId: number): Promise<{ success: boolean; error?: string }> {
+    try {
+        await requirePermission(projectId, Permission.MANAGE_NEWS);
+        await prisma.comments.delete({ where: { id: commentId } });
+        await prisma.news.update({ where: { id: newsId }, data: { comments_count: { decrement: 1 } } });
+        revalidatePath(`/projects/${projectIdentifier}/news/${newsId}`);
         return { success: true };
     } catch (e: any) { return { success: false, error: e.message }; }
 }

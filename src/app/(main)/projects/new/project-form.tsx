@@ -60,7 +60,7 @@ export function ProjectForm({ parentProjects, trackers, customFields, issueCusto
     const router = useRouter();
 
     const [state, formAction, isPending] = useActionState(
-        async (_prevState: { error?: string; success?: boolean; identifier?: string } | null, formData: FormData) => {
+        async (_prevState: { error?: string; success?: boolean; identifier?: string | null; continue?: boolean } | null, formData: FormData) => {
             const result = await createProjectAction(formData);
             if (result.success && result.identifier) {
                 router.push(`/projects/${result.identifier}`);

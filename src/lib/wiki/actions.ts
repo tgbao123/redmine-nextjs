@@ -32,7 +32,7 @@ export async function createWikiPageAction(projectId: number, projectIdentifier:
 
         // Create version
         await prisma.wiki_content_versions.create({
-            data: { wiki_content_id: page.id, page_id: page.id, author_id: user.id, data: data.content, version: 1, updated_on: new Date(), comments: data.comment || "", compression: "" },
+            data: { wiki_content_id: page.id, page_id: page.id, author_id: user.id, data: Buffer.from(data.content), version: 1, updated_on: new Date(), comments: data.comment || "", compression: "" },
         });
 
         revalidatePath(`/projects/${projectIdentifier}/wiki`);
@@ -52,7 +52,7 @@ export async function updateWikiPageAction(projectId: number, projectIdentifier:
 
         // Save current version to history
         await prisma.wiki_content_versions.create({
-            data: { wiki_content_id: content.id, page_id: pageId, author_id: user.id, data: data.content, version: newVersion, updated_on: new Date(), comments: data.comment || "", compression: "" },
+            data: { wiki_content_id: content.id, page_id: pageId, author_id: user.id, data: Buffer.from(data.content), version: newVersion, updated_on: new Date(), comments: data.comment || "", compression: "" },
         });
 
         // Update current content
@@ -72,6 +72,29 @@ export async function deleteWikiPageAction(projectId: number, projectIdentifier:
         await prisma.wiki_content_versions.deleteMany({ where: { page_id: pageId } });
         await prisma.wiki_contents.deleteMany({ where: { page_id: pageId } });
         await prisma.wiki_pages.delete({ where: { id: pageId } });
+        revalidatePath(`/projects/${projectIdentifier}/wiki`);
+        return { success: true };
+    } catch (e: any) { return { success: false, error: e.message }; }
+}
+
+export async function renameWikiPageAction(projectId: number, projectIdentifier: string, pageId: number, newTitle: string): Promise<{ success: boolean; error?: string }> {
+    try {
+        await requirePermission(projectId, Permission.RENAME_WIKI_PAGES);
+        const page = await prisma.wiki_pages.findFirst({ where: { id: pageId }, select: { title: true, wiki_id: true } });
+        if (!page) return { success: false, error: "Page not found" };
+
+        // Check if new title already exists
+        const existing = await prisma.wiki_pages.findFirst({ where: { wiki_id: page.wiki_id, title: newTitle } });
+        if (existing) return { success: false, error: "A page with this title already exists" };
+
+        // Create redirect from old title
+        await prisma.wiki_redirects.create({
+            data: { wiki_id: page.wiki_id, title: page.title, redirects_to: newTitle, redirects_to_wiki_id: page.wiki_id, created_on: new Date() },
+        });
+
+        // Rename page
+        await prisma.wiki_pages.update({ where: { id: pageId }, data: { title: newTitle } });
+
         revalidatePath(`/projects/${projectIdentifier}/wiki`);
         return { success: true };
     } catch (e: any) { return { success: false, error: e.message }; }

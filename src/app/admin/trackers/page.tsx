@@ -6,5 +6,5 @@ export default async function AdminTrackersPage() {
         prisma.trackers.findMany({ orderBy: { position: "asc" } }),
         prisma.issue_statuses.findMany({ orderBy: { position: "asc" }, select: { id: true, name: true } }),
     ]);
-    return <TrackerList trackers={trackers.map(t => ({ ...t, position: t.position || 0 }))} statuses={statuses} />;
+    return <TrackerList trackers={trackers.map(t => ({ ...t, position: t.position || 0, default_status_id: t.default_status_id ?? 0, fields_bits: t.fields_bits ?? 0 }))} statuses={statuses} />;
 }
